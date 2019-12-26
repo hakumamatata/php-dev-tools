@@ -1,7 +1,6 @@
 <?php
 /**
  * 編碼、解碼 相關， 例如: 全形半形、字串長度...等
- * v1.0 2019/11/14
  */
 
 namespace app\models\Functions;
@@ -218,6 +217,7 @@ class CodingHelper
             '＝' => $replace,
             '`' => $replace,
             '‵' => $replace,
+            '﹑' => $replace,
             ';' => $replace,
             '；' => $replace,
         );
