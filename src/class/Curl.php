@@ -2,6 +2,8 @@
 
 namespace app\models\Functions;
 
+use yii\helpers\Json;
+
 /**
  * Class Curl
  * @package app\models\Functions
@@ -46,23 +48,37 @@ class Curl
             CURLOPT_SSL_VERIFYHOST => false, //https 略過憑證檢查
             CURLOPT_SSL_VERIFYPEER => false, //https 略過憑證檢查
             CURLOPT_URL => $url,
-            CURLOPT_POST =>true,
+            CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $data,
         ];
         curl_setopt_array($curl, $params);
         $response = curl_exec($curl);
 
         if (!curl_errno($curl)) {
-            switch ($http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE)) {
-                case 200:  # OK
+            $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            if ($http_code) {
+                /**
+                 * $http_code 成功、錯誤
+                 * @link https://developer.mozilla.org/zh-TW/docs/Web/HTTP/Status 參照MDN
+                 */
+                if (200 <= $http_code && $http_code < 300) {
                     curl_close($curl);
                     return $response;
-                default:
+                } elseif (400 <= $http_code && $http_code < 600) {
+                    $this->setCurlErrors('Error $http_code ' . $http_code);
+                    curl_close($curl);
+                    return Json::encode(['status' => 'error', 'msg' => '執行請求錯誤<br> (Http Code:' . $http_code . ')']);
+                } else {
+                    $this->setCurlErrors('Other $http_code ' . $http_code);
                     curl_close($curl);
                     return false;
+                }
+            } else {
+                $this->setCurlErrors('Empty $http_code');
+                curl_close($curl);
+                return false;
             }
         } else {
-            # 異常紀錄
             $this->setCurlErrors(curl_error($curl));
             curl_close($curl);
             return false;

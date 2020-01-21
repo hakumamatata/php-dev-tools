@@ -21,6 +21,7 @@ class CodingHelper
         } catch (\Exception $e) {
             $newString = iconv(mb_detect_encoding($string), $encode, $string);
             $length = mb_strlen($newString, $encode);
+        } catch (\Error $e) {
         }
         return $length;
     }
@@ -224,4 +225,24 @@ class CodingHelper
         return strtr($string, $convertArr);
     }
 
+    /**
+     * 移除換行字元
+     * @param string $string
+     * @return string
+     */
+    public static function removeEOLChar(string $string): string
+    {
+        # 字串中的\n \r\n ... 需要使用雙引號才會有效
+        return str_replace(["\n", "\r", "\r\n", "\n\r"], '', $string);
+    }
+
+    /**
+     * 移除引號字元
+     * @param string $string
+     * @return string
+     */
+    public static function removeQuotes(string $string): string
+    {
+        return str_replace(["'", '"'], '', $string);
+    }
 }
